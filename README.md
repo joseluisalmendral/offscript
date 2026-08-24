@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg">
-  <img alt="grab" src="assets/banner-light.svg">
+  <img alt="offscript" src="assets/banner-light.svg">
 </picture>
 
 <p>
@@ -15,11 +15,15 @@ Transcribe a local file, or download video/audio/transcripts from YouTube,
 Vimeo and ~1800 other sites — all with one small script and a local Whisper
 model. No API keys, no cloud upload, no subscription.
 
+> **Using an AI agent?** [**AGENTS.md**](AGENTS.md) is the machine-facing guide:
+> preflight routing, ready-to-paste prompts, a failure-mode table, and the
+> invariants to respect when editing this repo.
+
 ## Why
 
 Cloud transcription services are fine until you have a private voice note, a
 long backlog of interviews, or just don't want your audio leaving your
-machine. `grab` wraps three proven local tools — `yt-dlp`, `ffmpeg`, and
+machine. `offscript` wraps three proven local tools — `yt-dlp`, `ffmpeg`, and
 `whisper-ctranslate2` (faster-whisper) — behind one consistent CLI, so you get
 the same output structure whether the source is a file on disk or a URL.
 
@@ -34,7 +38,7 @@ the same output structure whether the source is a file on disk or a URL.
 - **Batch mode**: many files/URLs in one run, one summary at the end.
 - **`--doctor`**: tells you up front what this machine can actually do — tools, cached models, network, disk — instead of failing halfway.
 - **Works offline** (`--offline`) against an already-cached model, and **frees disk** on demand (`--purge-model`).
-- Also ships as an installable **Claude Code skill** — see [below](#claude-code-skill).
+- **Agent-ready**: machine-readable preflight exit codes plus [`AGENTS.md`](AGENTS.md), and it ships as an installable **Claude Code skill** — see [below](#claude-code-skill).
 
 ## Install
 
@@ -43,27 +47,27 @@ brew install yt-dlp ffmpeg
 uv tool install whisper-ctranslate2
 ```
 
-Then either run the script directly, or install `grab` as a command:
+Then either run the script directly, or install `offscript` as a command:
 
 ```bash
-git clone https://github.com/joseluisalmendral/transcriptor.git
-cd transcriptor
-uv tool install .          # installs the `grab` command
+git clone https://github.com/joseluisalmendral/offscript.git
+cd offscript
+uv tool install .          # installs the `offscript` command
 # or, without cloning:
-uv tool install git+https://github.com/joseluisalmendral/transcriptor.git
+uv tool install git+https://github.com/joseluisalmendral/offscript.git
 ```
 
 ## Usage
 
 ```bash
-grab --doctor                                 # what can this machine do? (run this first)
-grab "/path/note.ogg"                         # transcribe a local file
-grab "https://youtu.be/xxxx"                  # audio only (default for URLs)
-grab URL -w video,audio,transcript            # pick several targets at once
-grab URL -w all                                # everything
-grab "note.ogg" "URL1" "URL2" -w transcript   # local files and URLs, mixed
-grab -f targets.txt -w audio                  # paths/URLs from a file
-grab "entrevista.mp3" --task translate        # foreign audio -> English text
+offscript --doctor                                 # what can this machine do? (run this first)
+offscript "/path/note.ogg"                         # transcribe a local file
+offscript "https://youtu.be/xxxx"                  # audio only (default for URLs)
+offscript URL -w video,audio,transcript            # pick several targets at once
+offscript URL -w all                                # everything
+offscript "note.ogg" "URL1" "URL2" -w transcript   # local files and URLs, mixed
+offscript -f targets.txt -w audio                  # paths/URLs from a file
+offscript "entrevista.mp3" --task translate        # foreign audio -> English text
 ```
 
 `--doctor` reports installed tools, which Whisper models are already cached
@@ -77,28 +81,28 @@ captions only — actually work here. It exits `0` ready / `1` install-needed /
 
 ```bash
 # High-quality transcription of a long interview (Spanish, best value model)
-grab "URL" -w transcript --whisper-model distil-large-v3 --language es
+offscript "URL" -w transcript --whisper-model distil-large-v3 --language es
 
 # Only srt subtitles, skip txt/tsv/json
-grab "URL" -w transcript --transcript-format srt
+offscript "URL" -w transcript --transcript-format srt
 
 # Only the platform's original captions (no Whisper involved)
-grab "URL" -w subs
+offscript "URL" -w subs
 
 # Full video in 4K with embedded subs/metadata
-grab "URL" -w video --video-quality 2160
+offscript "URL" -w video --video-quality 2160
 
 # Custom output folder
-grab "URL" -w audio -o ~/Music/grabs
+offscript "URL" -w audio -o ~/Music/transcripts
 
 # Offline: use an already-cached model, never touch the network
-grab "note.ogg" --whisper-model medium --offline
+offscript "note.ogg" --whisper-model medium --offline
 
 # Free disk: delete one cached model (refuses ambiguous names)
-grab --purge-model distil-large-v3
+offscript --purge-model distil-large-v3
 
 # Captions only — no Whisper model, no multi-GB download
-grab "URL" -w subs
+offscript "URL" -w subs
 ```
 </details>
 
@@ -151,8 +155,8 @@ downloads/<uploader>/<title> [<id>]/
 
 Models are downloaded once and kept in `~/.cache/huggingface/hub/` forever
 until something deletes them — `large-v3` alone is ~3GB, so a few large models
-add up to several silent gigabytes. `grab --doctor` lists what's cached with
-sizes; `grab --purge-model <name>` removes one and reports how much it freed.
+add up to several silent gigabytes. `offscript --doctor` lists what's cached with
+sizes; `offscript --purge-model <name>` removes one and reports how much it freed.
 
 Purging resolves the name against the real model→repo map (a substring guess
 is wrong here: `distil-large-v3` lives in `faster-distil-whisper-large-v3`),
@@ -162,7 +166,7 @@ the Hugging Face cache before deleting anything.
 ## Claude Code skill
 
 This repo also ships as a ready-to-use [Claude Code](https://claude.com/claude-code)
-skill — invoke it as `/transcriptor` from any project. It runs `--doctor` as a
+skill — invoke it as `/offscript` from any project. It runs `--doctor` as a
 preflight before its first attempt, so a restricted environment (a sandbox with
 no network, or a machine missing the tools) is reported immediately with the
 exact command to run elsewhere, instead of failing halfway through. It also
@@ -178,7 +182,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE). `grab.py` is original code under MIT; it calls
+MIT — see [LICENSE](LICENSE). `offscript.py` is original code under MIT; it calls
 `yt-dlp` (Unlicense), `ffmpeg` (GPL/LGPL) and `whisper-ctranslate2` (MIT) as
 separate external processes rather than linking against them, so this
 project's license doesn't inherit their terms — you're still bound by each

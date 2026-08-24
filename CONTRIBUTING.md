@@ -1,8 +1,8 @@
 # Contributing
 
-`grab` is a single dependency-free Python script (stdlib only) that shells
+`offscript` is a single dependency-free Python script (stdlib only) that shells
 out to `yt-dlp`, `ffmpeg`/`ffprobe` and `whisper-ctranslate2`. There's no
-build step for development — just edit `grab.py` and run it.
+build step for development — just edit `offscript.py` and run it.
 
 ## Setup
 
@@ -14,7 +14,7 @@ uv tool install whisper-ctranslate2
 ## Making a change
 
 1. Fork and branch from `main`.
-2. Edit `grab.py`. Keep it a single flat module — no new dependencies unless
+2. Edit `offscript.py`. Keep it a single flat module — no new dependencies unless
    they're genuinely necessary (the whole point is a zero-install script).
 3. Run the unit tests — they cover the pure logic (target classification,
    model→cache resolution, flag parsing) and need no network, models or media:
@@ -23,13 +23,13 @@ uv tool install whisper-ctranslate2
    ```
 4. Test manually against a local file and a URL:
    ```bash
-   ./grab.py --doctor
-   ./grab.py "/path/to/some.ogg" --transcript-format txt
-   ./grab.py "https://youtu.be/xxxx" -w audio
+   ./offscript.py --doctor
+   ./offscript.py "/path/to/some.ogg" --transcript-format txt
+   ./offscript.py "https://youtu.be/xxxx" -w audio
    ```
 5. If you touch packaging, sanity-check the build:
    ```bash
-   uv build && uv pip install --python /tmp/venv/bin/python3 dist/*.whl && grab --help
+   uv build && uv pip install --python /tmp/venv/bin/python3 dist/*.whl && offscript --help
    ```
 6. Open a PR describing the change and why.
 
@@ -37,7 +37,7 @@ uv tool install whisper-ctranslate2
 
 - **A path that was clearly meant as a file must never reach yt-dlp.** When it
   does, a missing/unmounted file reports as `is not a valid URL`, which sends
-  people debugging the wrong layer. `classify()` owns this; `tests/test_grab.py`
+  people debugging the wrong layer. `classify()` owns this; `tests/test_offscript.py`
   pins the behaviour.
 - **Never guess a model's cache directory by substring.** The distil builds
   reorder the words (`distil-large-v3` → `faster-distil-whisper-large-v3`) and
@@ -52,7 +52,7 @@ Include: the exact command you ran, your OS, and the output of
 
 ## Scope
 
-Advanced `whisper-ctranslate2` features not wired into `grab.py` (speaker
+Advanced `whisper-ctranslate2` features not wired into `offscript.py` (speaker
 diarization, live microphone dictation, word-level timestamps, VAD tuning)
 are intentionally left out to keep the CLI small — see
 [`docs/models.md`](docs/models.md) for how to run them directly instead.

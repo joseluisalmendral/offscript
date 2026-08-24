@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-grab — mini CLI to transcribe/download video / audio / transcript from a
+offscript — mini CLI to transcribe/download video / audio / transcript from a
 local file, or from YouTube, Vimeo and ~1800 other sites (anything yt-dlp
 supports).
 
 Examples:
-    ./grab.py --doctor                                  # check what this machine can do
-    ./grab.py "/path/note.ogg"                          # transcribe a local file
-    ./grab.py "https://youtu.be/xxxx"                   # audio only (default)
-    ./grab.py URL -w video,audio,transcript             # several at once
-    ./grab.py URL -w all                                # everything
-    ./grab.py URL1 "note.ogg" -w transcript             # batch (URLs + local files mix freely)
-    ./grab.py -f targets.txt -w transcript              # targets from a file
-    ./grab.py "note.ogg" --language es --task translate # foreign audio -> English text
-    ./grab.py "note.ogg" --offline                      # never touch the network
+    ./offscript.py --doctor                                  # check what this machine can do
+    ./offscript.py "/path/note.ogg"                          # transcribe a local file
+    ./offscript.py "https://youtu.be/xxxx"                   # audio only (default)
+    ./offscript.py URL -w video,audio,transcript             # several at once
+    ./offscript.py URL -w all                                # everything
+    ./offscript.py URL1 "note.ogg" -w transcript             # batch (URLs + local files mix freely)
+    ./offscript.py -f targets.txt -w transcript              # targets from a file
+    ./offscript.py "note.ogg" --language es --task translate # foreign audio -> English text
+    ./offscript.py "note.ogg" --offline                      # never touch the network
 
 Outputs for URLs go to ./downloads/<uploader>/<title> [<id>]/; for local
 files, next to the source file (or under -o/--output if given), with
@@ -227,7 +227,7 @@ def reachable(url: str, timeout: float = 5.0) -> bool:
 
 def doctor() -> int:
     """Report what this machine can actually do. Exit code: 0 ready, 1 degraded, 2 blocked."""
-    say(f"{BOLD}grab doctor{RESET}\n")
+    say(f"{BOLD}offscript doctor{RESET}\n")
 
     say(f"{BOLD}tools{RESET}")
     versions = {}
@@ -304,7 +304,7 @@ def doctor() -> int:
         say(f"\n{BOLD}VERDICT:{RESET} {YELLOW}degraded{RESET} — only some capabilities are available here")
         return 1
     say(f"\n{BOLD}VERDICT:{RESET} {RED}blocked{RESET} — nothing can run in this environment")
-    say(f"{DIM}run grab on a machine with the tools installed, or with network access to install them{RESET}")
+    say(f"{DIM}run offscript on a machine with the tools installed, or with network access to install them{RESET}")
     return 2
 
 
@@ -342,7 +342,7 @@ def report_missing(raw: str, path: Path) -> None:
     parent = path.parent
     if not parent.exists():
         say(f"    the folder {parent} does not exist here either — if this path lives on"
-            f" another machine (or a volume that is not mounted), run grab there,"
+            f" another machine (or a volume that is not mounted), run offscript there,"
             f" or copy the file into this environment first.", DIM)
     elif not os.access(parent, os.R_OK):
         say(f"    {parent} exists but is not readable — check permissions.", DIM)
@@ -506,7 +506,7 @@ def transcribe(audio: Path, dest: Path, args) -> None:
 
     if args.whisper_model not in MODEL_REPOS:
         # Not rejected: whisper-ctranslate2 may know models this build doesn't.
-        say(f"  ℹ '{args.whisper_model}' is not a name grab recognises — if that's a typo,"
+        say(f"  ℹ '{args.whisper_model}' is not a name offscript recognises — if that's a typo,"
             f" valid names are: {', '.join(MODEL_REPOS)}", YELLOW)
 
     if not model_is_cached(args.whisper_model, cached_models()):
@@ -515,7 +515,7 @@ def transcribe(audio: Path, dest: Path, args) -> None:
         if args.offline:
             die(f"model '{args.whisper_model}' is not cached and --offline was requested.\n"
                 f"  Either drop --offline to download it{detail}, or pick a cached model "
-                f"(see: grab --doctor).")
+                f"(see: offscript --doctor).")
         say(f"  ↓ model '{args.whisper_model}' not cached — downloading it first{detail}", YELLOW)
 
     say(f"  ✎ transcribing with whisper ({args.whisper_model}, task={args.task})…", YELLOW)
@@ -609,7 +609,7 @@ def main() -> None:
     ytdlp = shutil.which("yt-dlp") or ""
 
     targets_desc = ", ".join(sorted(wants)) if raw_want_given else "audio (URLs) / transcript (local files)"
-    say(f"{BOLD}grab{RESET} — targets: {GREEN}{targets_desc}{RESET} | {len(urls)} item(s)")
+    say(f"{BOLD}offscript{RESET} — targets: {GREEN}{targets_desc}{RESET} | {len(urls)} item(s)")
 
     results, failures = [], 0
     for raw, path, kind in targets:

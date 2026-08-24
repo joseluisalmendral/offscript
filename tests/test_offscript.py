@@ -1,4 +1,4 @@
-"""Unit tests for grab's pure logic — no network, no models, no media needed.
+"""Unit tests for offscript's pure logic — no network, no models, no media needed.
 
 Run with:  pytest
 """
@@ -7,7 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from grab import (  # noqa: E402
+from offscript import (  # noqa: E402
     cache_dir_name,
     classify,
     human,
