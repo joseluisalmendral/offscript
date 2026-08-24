@@ -116,6 +116,17 @@ MODEL_REPOS = {
     "turbo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo",
 }
 
+# Every Distil-Whisper build is English-only, as is every ".en" build — the
+# Hugging Face cards declare `language: [en]`. This matters more than it looks:
+# forcing a non-English language on one of them does NOT error, it emits
+# confident English fragments, so a 50-minute Spanish recording comes back as
+# fluent-looking garbage. Checked rather than documented.
+ENGLISH_ONLY = {
+    "tiny.en", "base.en", "small.en", "medium.en",
+    "distil-large-v2", "distil-large-v3", "distil-large-v3.5",
+    "distil-medium.en", "distil-small.en",
+}
+
 # Approximate int8 download sizes, only used to warn before a big download.
 MODEL_SIZE_MB = {
     "tiny": 75, "tiny.en": 75, "base": 145, "base.en": 145,
@@ -508,6 +519,23 @@ def transcribe(audio: Path, dest: Path, args) -> None:
         # Not rejected: whisper-ctranslate2 may know models this build doesn't.
         say(f"  ℹ '{args.whisper_model}' is not a name offscript recognises — if that's a typo,"
             f" valid names are: {', '.join(MODEL_REPOS)}", YELLOW)
+
+    if args.whisper_model in ENGLISH_ONLY:
+        lang = (args.language or "").lower()
+        multilingual = "large-v3-turbo (fast) or large-v3 (most accurate)"
+        if lang and lang not in ("en", "english"):
+            die(f"'{args.whisper_model}' is an English-only model, but --language {args.language}"
+                f" was requested.\n"
+                f"  It would not fail — it would return confident English text that has nothing"
+                f" to do with the audio.\n"
+                f"  Use a multilingual model instead: {multilingual}.")
+        if not lang:
+            say(f"  ⚠ '{args.whisper_model}' is English-only and no --language was given."
+                f" If this audio is not English the transcript will be nonsense —"
+                f" use {multilingual}.", YELLOW)
+        elif args.task == "translate":
+            say(f"  ℹ --task translate on an English-only model does nothing;"
+                f" it can only read English in the first place.", YELLOW)
 
     if not model_is_cached(args.whisper_model, cached_models()):
         size = MODEL_SIZE_MB.get(args.whisper_model)

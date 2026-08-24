@@ -122,7 +122,7 @@ the plain text, no subtitle files.
 I need SRT subtitles for this video to publish alongside it, so accuracy matters
 more than speed: https://youtu.be/VIDEO_ID
 ```
-→ `offscript "https://youtu.be/VIDEO_ID" -w transcript --whisper-model distil-large-v3 --transcript-format srt`
+→ `offscript "https://youtu.be/VIDEO_ID" -w transcript --whisper-model large-v3-turbo --transcript-format srt`
 
 **Transcript without downloading a big model**
 ```
@@ -142,7 +142,7 @@ Transcribe every .m4a in ~/Recordings/interviews and put the transcripts under
 ```
 This is a 40-minute interview in Portuguese. I need it as English text.
 ```
-→ `offscript "/path/interview.m4a" --language pt --task translate --whisper-model distil-large-v3`
+→ `offscript "/path/interview.m4a" --language pt --task translate --whisper-model large-v3-turbo`
 
 **Reclaim disk**
 ```
@@ -177,16 +177,22 @@ Recognised model names: `tiny`, `tiny.en`, `base`, `base.en`, `small`, `small.en
 `distil-small.en`, `large-v3-turbo`, `turbo`. An unrecognised name is warned
 about, not rejected — newer models may exist upstream.
 
+> **English-only models:** every `distil-*` build plus every `.en` build. They
+> declare `language: [en]`. On other-language audio they do not fail — they
+> return confident English that has nothing to do with the recording, so
+> `offscript` refuses the combination outright. Multilingual equivalent:
+> `large-v3-turbo`.
+
 ## 7. Model selection
 
 | Situation | Model | Why |
 |---|---|---|
 | Short voice note, clean audio | `small` (484MB) | Fast and sufficient. The default. |
-| Podcast, interview, lecture — accuracy matters | **`distil-large-v3`** (1.5GB) | **Best value.** Near `large-v3` accuracy at roughly 4–6× the speed. **Propose this proactively for long or important audio even when the user did not ask.** |
+| Podcast, interview, lecture — accuracy matters | **`large-v3-turbo`** (1.6GB) | **Best value, any language.** Near `large-v3` accuracy at roughly 8× the speed. **Propose this proactively for long or important audio even when the user did not ask.** |
 | Long file, user does not want to wait for a download | Largest model `--doctor` shows as already cached | Avoids pulling gigabytes mid-task. |
 | Maximum accuracy, time irrelevant | `large-v3` (3.1GB) | Hard accents, noisy recordings, critical audio. |
-| Speed above all, still multilingual | `large-v3-turbo` (1.6GB) | ~8× faster than `large-v3`, marginally less accurate than `distil-large-v3`. |
-| English-only, wants it fast | `distil-medium.en` (750MB) / `distil-small.en` (330MB) | Never use a `.en` model on non-English audio. |
+| English audio, speed above all | `distil-large-v3` (1.5GB) | ~4–6× faster than `large-v3`. **English only** — never on other languages (see below). |
+| English audio, smaller download | `distil-medium.en` (750MB) / `distil-small.en` (330MB) | **English only.** |
 | Throwaway draft | `tiny` (75MB) / `base` (145MB) | Rough text only. |
 
 Files longer than 30 minutes trigger a warning from the tool. Heed it: model
@@ -202,8 +208,9 @@ choice dominates wall-clock time on long audio.
 | `… is a directory — pass files instead` | A folder was passed. Rejected deliberately. | Use a shell glob: `~/dir/*.mp3`. |
 | `VERDICT: blocked` (sandbox, CI, container) | No tools, no cached model, no network. Common in agent sandboxes. | **Stop. Do not retry.** Report what is missing and give the exact command for the user's own machine. Offer `-w subs` only if `yt-dlp` and network exist. |
 | `model '…' is not cached and --offline was requested` | `--offline` forbids the download the run needs. The message states the size. | Either drop `--offline`, or pick a model `--doctor` lists as cached. |
+| Fluent transcript in the wrong language, or one-word fragments | An **English-only** model was used on other-language audio. Every `distil-*` model is English-only, not just the `.en` ones — and it does not error, it invents. | `offscript` now hard-errors on this combination. Re-run with `large-v3-turbo`. Discard the previous output entirely; it is not partially correct. |
 | Empty or nonsense transcript on music | **Expected Whisper behaviour** on instrumental passages — it can output nothing or hallucinate lyrics. | Say so plainly. Do not retry with a bigger model expecting a different outcome, and never invent lyrics. |
-| Transcription taking far longer than expected | Long audio × large model. Throughput is machine-specific. | Do **not** invent an ETA. Sample and measure: `ffmpeg -i input.m4a -t 120 -c copy sample.m4a`, transcribe that, extrapolate. Or switch to `distil-large-v3` / `large-v3-turbo`. |
+| Transcription taking far longer than expected | Long audio × large model. Throughput is machine-specific. | Do **not** invent an ETA. Sample and measure: `ffmpeg -i input.m4a -t 120 -c copy sample.m4a`, transcribe that, extrapolate. Or switch to `large-v3-turbo`. |
 | `'…' is not a name … recognises` | Model-name typo, or a model newer than this build. | Check against the list in §6; the run continues regardless. |
 | `whisper produced no output files` | Whisper ran but wrote nothing. | Surfaced as a real failure, not a silent success. Report it; check the input is actually decodable audio. |
 

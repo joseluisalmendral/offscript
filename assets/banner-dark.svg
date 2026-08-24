@@ -1,20 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="438" viewBox="0 0 1200 438" role="img" aria-label="offscript — Transcribe any audio or video in 100 languages, on your own machine. Nothing gets uploaded, no API keys, no subscription, files or 1800+ sites.">
-  <rect width="1200" height="438" fill="#0b0b0c"/>
-  <g>
-    <rect x="72" y="120" width="80" height="80" rx="20" fill="#f5f5f7"/>
-    <rect x="89.0" y="151.7" width="6" height="16.6" rx="3.0" fill="#0b0b0c"/>
-    <rect x="99.0" y="144.4" width="6" height="31.3" rx="3.0" fill="#0b0b0c"/>
-    <rect x="109.0" y="137.0" width="6" height="46.0" rx="3.0" fill="#0b0b0c"/>
-    <rect x="119.0" y="146.4" width="6" height="27.1" rx="3.0" fill="#0b0b0c"/>
-    <rect x="129.0" y="150.6" width="6" height="18.9" rx="3.0" fill="#0b0b0c"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="381" viewBox="0 0 1200 381" role="img" aria-label="offscript — Transcribe any audio or video in 100 languages, on your own machine. Nothing gets uploaded, no API keys, no subscription, files or 1800+ sites.">
+  <defs>
+    <clipPath id="card">
+      <rect x="0.5" y="0.5" width="1199" height="380" rx="16"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="1200" height="381" fill="#0b0b0c"/>
+    <rect y="305" width="1200" height="76" fill="#1a1a1f"/>
+    <line x1="0" y1="305" x2="1200" y2="305" stroke="#2c2c31" stroke-width="1"/>
+    <rect x="64" y="56" width="80" height="80" rx="20" fill="#f5f5f7"/>
+    <rect x="81" y="87.72" width="6" height="16.56" rx="3" fill="#0b0b0c"/>
+    <rect x="91" y="80.36" width="6" height="31.28" rx="3" fill="#0b0b0c"/>
+    <rect x="101" y="73" width="6" height="46" rx="3" fill="#0b0b0c"/>
+    <rect x="111" y="82.43" width="6" height="27.14" rx="3" fill="#0b0b0c"/>
+    <rect x="121" y="86.57" width="6" height="18.86" rx="3" fill="#0b0b0c"/>
+    <text x="168" y="129" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="92" font-weight="700" letter-spacing="-3.2" fill="#f5f5f7">offscript</text>
+    <text x="64" y="189" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="28" fill="#d2d2d7">Transcribe any audio or video in 100 languages, on your own machine.</text>
+    <rect x="64" y="219" width="530" height="46" rx="10" fill="#1a1a1f"/>
+    <text x="84" y="249" font-family="'SF Mono', Menlo, Consolas, ui-monospace, monospace" font-size="18" fill="#d2d2d7"><tspan fill="#98989d">$ </tspan>offscript interview.m4a<tspan fill="#2dd4bf"> → transcript.srt</tspan></text>
+    <circle cx="69" cy="344" r="5" fill="#2dd4bf"/><text x="84" y="351" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="600" fill="#f5f5f7">Nothing gets uploaded</text>
+    <circle cx="385" cy="344" r="5" fill="#2dd4bf"/><text x="400" y="351" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="600" fill="#f5f5f7">No API keys</text>
+    <circle cx="595" cy="344" r="5" fill="#2dd4bf"/><text x="610" y="351" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="600" fill="#f5f5f7">No subscription</text>
+    <circle cx="845" cy="344" r="5" fill="#2dd4bf"/><text x="860" y="351" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="22" font-weight="600" fill="#f5f5f7">Files or 1800+ sites</text>
   </g>
-  <text x="184" y="158" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="92" font-weight="700" letter-spacing="-3.2" fill="#f5f5f7">offscript</text>
-  <text x="187" y="220" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="400" fill="#d2d2d7">Transcribe any audio or video in 100 languages, on your own machine.</text>
-  <rect x="187" y="250" width="530" height="46" rx="10" fill="#18181b"/>
-  <text x="207" y="280" font-family="'SF Mono', Menlo, Consolas, ui-monospace, monospace" font-size="18" fill="#d2d2d7"><tspan fill="#98989d">$ </tspan>offscript interview.m4a<tspan fill="#2dd4bf"> → transcript.srt</tspan></text>
-  <line x1="72" y1="338" x2="1128" y2="338" stroke="#2a2a2e" stroke-width="1"/>
-  <circle cx="76" cy="369" r="4.5" fill="#2dd4bf"/><text x="90" y="376" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="500" fill="#f5f5f7">Nothing gets uploaded</text>
-  <circle cx="394" cy="369" r="4.5" fill="#2dd4bf"/><text x="408" y="376" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="500" fill="#f5f5f7">No API keys</text>
-  <circle cx="604" cy="369" r="4.5" fill="#2dd4bf"/><text x="618" y="376" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="500" fill="#f5f5f7">No subscription</text>
-  <circle cx="854" cy="369" r="4.5" fill="#2dd4bf"/><text x="868" y="376" font-family="'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, 'Segoe UI', Arial, sans-serif" font-size="21" font-weight="500" fill="#f5f5f7">Files or 1800+ sites</text>
+  <rect x="0.5" y="0.5" width="1199" height="380" rx="16" fill="none" stroke="#2c2c31" stroke-width="1"/>
 </svg>

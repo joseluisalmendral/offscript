@@ -1,6 +1,6 @@
 [project]
 name = "offscript"
-version = "1.2.0"
+version = "1.3.0"
 description = "Transcribe or download audio, video and transcripts from local files or 1800+ sites, powered by local Whisper."
 readme = "README.md"
 license = { text = "MIT" }

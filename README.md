@@ -15,9 +15,60 @@ Transcribe a local file, or download video/audio/transcripts from YouTube,
 Vimeo and ~1800 other sites — all with one small script and a local Whisper
 model. No API keys, no cloud upload, no subscription.
 
-> **Using an AI agent?** [**AGENTS.md**](AGENTS.md) is the machine-facing guide:
-> preflight routing, ready-to-paste prompts, a failure-mode table, and the
-> invariants to respect when editing this repo.
+---
+
+## Use it with an AI agent
+
+`offscript` gets you the text. Your agent does the rest — summarise the meeting,
+pull out the action items, draft the reply. That is the whole point: the hard
+part (accurate speech-to-text, locally) stops being the bottleneck.
+
+**Paste this into Claude Code, Cursor, or any coding agent.** It picks up
+everything it needs from [`AGENTS.md`](AGENTS.md) — how to check the machine
+before touching it, which model fits the job, and what to do when something is
+missing:
+
+```text
+Read https://raw.githubusercontent.com/joseluisalmendral/offscript/main/AGENTS.md
+and follow it.
+
+Set up offscript on this machine, then transcribe ~/Downloads/recording.m4a —
+it's in Spanish.
+
+Check what's already installed before installing anything, and tell me the
+download size before you commit me to a model.
+```
+
+### Everyday things to ask for
+
+Once it is set up, you talk to your agent normally. No flags to remember:
+
+| You say | What you get |
+|---|---|
+| *"This voice note is 9 minutes and I don't want to listen to it again — transcribe it and tell me the 3 things I need to reply to."* | The transcript, then the answer. Your agent reads it so you don't have to. |
+| *"Get me SRT subtitles for this talk so I can publish it with captions: `<url>`"* | Downloads the audio, transcribes with a high-accuracy model, writes `transcript.srt`. |
+| *"Transcribe yesterday's team call and pull out who committed to what, with timestamps."* | A 50-minute meeting becomes a list of owners and deadlines. |
+| *"The interview is in Portuguese. I need it as English text I can paste into a doc."* | One flag away — Whisper translates as it transcribes. |
+| *"Transcribe every voice memo in `~/Recordings`."* | Batch run, one transcript per file, one summary at the end. |
+| *"Which Whisper models am I storing and how much disk are they eating?"* | Sizes listed, then it offers to delete the ones you won't reuse. |
+| *"Just get me the transcript of this YouTube video — don't download any huge models."* | Uses the platform's own captions instead. No model, no gigabytes. |
+
+### Why it behaves well in an agent's hands
+
+Most CLI tools fail halfway through and leave the agent guessing. This one is
+built to be driven:
+
+- **It says what it can do before it tries.** `offscript --doctor` reports tools,
+  cached models with sizes, network reach and free disk, and exits `0` ready /
+  `1` install-needed / `2` blocked — so an agent routes on a number, not on
+  parsing prose.
+- **It asks before spending your resources.** Downloads over 1GB and model
+  deletions are surfaced to you, not decided quietly.
+- **Its errors point at the real cause.** A file that isn't there says so,
+  instead of being handed to the downloader and coming back as
+  `is not a valid URL`.
+
+---
 
 ## Why
 
@@ -32,7 +83,7 @@ the same output structure whether the source is a file on disk or a URL.
 - **Local files or URLs, freely mixed** in a single command/batch.
 - **~1800 sites** via `yt-dlp` (YouTube, Vimeo, and most video/audio platforms).
 - **Video, audio, transcript, original subtitles, thumbnail, metadata** — pick what you need with `-w`.
-- **Every Whisper size**, from `tiny` to `large-v3` and the fast `distil-*`/`turbo` variants — auto-downloaded on first use.
+- **Every Whisper size**, from `tiny` to `large-v3` plus the fast `turbo`/`distil-*` variants — auto-downloaded on first use, and it refuses to run an English-only model on other-language audio.
 - **Transcribe or translate** to English (`--task translate`).
 - **5 transcript formats** (`txt`, `srt`, `vtt`, `tsv`, `json`), pick one or get them all.
 - **Batch mode**: many files/URLs in one run, one summary at the end.
@@ -81,7 +132,7 @@ captions only — actually work here. It exits `0` ready / `1` install-needed /
 
 ```bash
 # High-quality transcription of a long interview (Spanish, best value model)
-offscript "URL" -w transcript --whisper-model distil-large-v3 --language es
+offscript "URL" -w transcript --whisper-model large-v3-turbo --language es
 
 # Only srt subtitles, skip txt/tsv/json
 offscript "URL" -w transcript --transcript-format srt
@@ -99,7 +150,7 @@ offscript "URL" -w audio -o ~/Music/transcripts
 offscript "note.ogg" --whisper-model medium --offline
 
 # Free disk: delete one cached model (refuses ambiguous names)
-offscript --purge-model distil-large-v3
+offscript --purge-model large-v3-turbo
 
 # Captions only — no Whisper model, no multi-GB download
 offscript "URL" -w subs
