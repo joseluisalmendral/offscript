@@ -1,6 +1,6 @@
 [project]
 name = "grab-transcriber"
-version = "1.0.0"
+version = "1.1.0"
 description = "Transcribe or download audio, video and transcripts from local files or 1800+ sites, powered by local Whisper."
 readme = "README.md"
 license = { text = "MIT" }
@@ -23,6 +23,9 @@ Issues = "https://github.com/joseluisalmendral/transcriptor/issues"
 
 [project.scripts]
 grab = "grab:main"
+
+[dependency-groups]
+dev = ["pytest>=8"]
 
 [build-system]
 requires = ["hatchling"]

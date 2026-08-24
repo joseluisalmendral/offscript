@@ -32,6 +32,8 @@ the same output structure whether the source is a file on disk or a URL.
 - **Transcribe or translate** to English (`--task translate`).
 - **5 transcript formats** (`txt`, `srt`, `vtt`, `tsv`, `json`), pick one or get them all.
 - **Batch mode**: many files/URLs in one run, one summary at the end.
+- **`--doctor`**: tells you up front what this machine can actually do — tools, cached models, network, disk — instead of failing halfway.
+- **Works offline** (`--offline`) against an already-cached model, and **frees disk** on demand (`--purge-model`).
 - Also ships as an installable **Claude Code skill** — see [below](#claude-code-skill).
 
 ## Install
@@ -54,6 +56,7 @@ uv tool install git+https://github.com/joseluisalmendral/transcriptor.git
 ## Usage
 
 ```bash
+grab --doctor                                 # what can this machine do? (run this first)
 grab "/path/note.ogg"                         # transcribe a local file
 grab "https://youtu.be/xxxx"                  # audio only (default for URLs)
 grab URL -w video,audio,transcript            # pick several targets at once
@@ -62,6 +65,12 @@ grab "note.ogg" "URL1" "URL2" -w transcript   # local files and URLs, mixed
 grab -f targets.txt -w audio                  # paths/URLs from a file
 grab "entrevista.mp3" --task translate        # foreign audio -> English text
 ```
+
+`--doctor` reports installed tools, which Whisper models are already cached
+(with sizes), whether Hugging Face and PyPI are reachable, free disk, and which
+of the three capabilities — transcribe a local file, download from a URL, fetch
+captions only — actually work here. It exits `0` ready / `1` install-needed /
+`2` blocked, so it's usable in scripts and by agents.
 
 <details>
 <summary>More examples</summary>
@@ -81,6 +90,15 @@ grab "URL" -w video --video-quality 2160
 
 # Custom output folder
 grab "URL" -w audio -o ~/Music/grabs
+
+# Offline: use an already-cached model, never touch the network
+grab "note.ogg" --whisper-model medium --offline
+
+# Free disk: delete one cached model (refuses ambiguous names)
+grab --purge-model distil-large-v3
+
+# Captions only — no Whisper model, no multi-GB download
+grab "URL" -w subs
 ```
 </details>
 
@@ -96,6 +114,9 @@ grab "URL" -w audio -o ~/Music/grabs
 | `--transcript-format` | `all` | `txt`, `vtt`, `srt`, `tsv`, `json`, `all` |
 | `--audio-format` | `mp3` | `m4a`, `opus`, `flac`, `wav`… |
 | `--video-quality` | `1080` | max height: `720`, `1080`, `2160`… |
+| `--offline` | off | require a cached model, never reach the network |
+| `--doctor` | — | report tools/models/network/disk, then exit |
+| `--purge-model` | — | delete one cached model to free disk, then exit |
 
 ## How it works
 
@@ -126,12 +147,27 @@ downloads/<uploader>/<title> [<id>]/
     transcript.{txt,srt,vtt,tsv,json}
 ```
 
+## Model cache & disk
+
+Models are downloaded once and kept in `~/.cache/huggingface/hub/` forever
+until something deletes them — `large-v3` alone is ~3GB, so a few large models
+add up to several silent gigabytes. `grab --doctor` lists what's cached with
+sizes; `grab --purge-model <name>` removes one and reports how much it freed.
+
+Purging resolves the name against the real model→repo map (a substring guess
+is wrong here: `distil-large-v3` lives in `faster-distil-whisper-large-v3`),
+refuses ambiguous or unknown names, and verifies the resolved path sits inside
+the Hugging Face cache before deleting anything.
+
 ## Claude Code skill
 
 This repo also ships as a ready-to-use [Claude Code](https://claude.com/claude-code)
-skill — invoke it as `/transcriptor` from any project. It picks the right
-Whisper model for the situation, checks whether it needs downloading first,
-and lists everything it can do on request.
+skill — invoke it as `/transcriptor` from any project. It runs `--doctor` as a
+preflight before its first attempt, so a restricted environment (a sandbox with
+no network, or a machine missing the tools) is reported immediately with the
+exact command to run elsewhere, instead of failing halfway through. It also
+picks the model to fit the job, asks before downloading multiple gigabytes or
+deleting anything, and lists everything it can do on request.
 
 Download the packaged skill from the [latest release](../../releases/latest)
 and unzip it into `~/.claude/skills/`, then run the install commands above.

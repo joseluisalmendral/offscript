@@ -16,16 +16,34 @@ uv tool install whisper-ctranslate2
 1. Fork and branch from `main`.
 2. Edit `grab.py`. Keep it a single flat module — no new dependencies unless
    they're genuinely necessary (the whole point is a zero-install script).
-3. Test manually against a local file and a URL:
+3. Run the unit tests — they cover the pure logic (target classification,
+   model→cache resolution, flag parsing) and need no network, models or media:
    ```bash
+   pytest
+   ```
+4. Test manually against a local file and a URL:
+   ```bash
+   ./grab.py --doctor
    ./grab.py "/path/to/some.ogg" --transcript-format txt
    ./grab.py "https://youtu.be/xxxx" -w audio
    ```
-4. If you touch packaging, sanity-check the build:
+5. If you touch packaging, sanity-check the build:
    ```bash
    uv build && uv pip install --python /tmp/venv/bin/python3 dist/*.whl && grab --help
    ```
-5. Open a PR describing the change and why.
+6. Open a PR describing the change and why.
+
+## Two things worth knowing before you change them
+
+- **A path that was clearly meant as a file must never reach yt-dlp.** When it
+  does, a missing/unmounted file reports as `is not a valid URL`, which sends
+  people debugging the wrong layer. `classify()` owns this; `tests/test_grab.py`
+  pins the behaviour.
+- **Never guess a model's cache directory by substring.** The distil builds
+  reorder the words (`distil-large-v3` → `faster-distil-whisper-large-v3`) and
+  `turbo` lives under a different org, so substring matching reports cached
+  models as missing and vice versa. `MODEL_REPOS` mirrors
+  `faster_whisper.utils._MODELS`; keep it in sync.
 
 ## Reporting issues
 
