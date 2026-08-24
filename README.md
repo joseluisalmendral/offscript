@@ -4,6 +4,9 @@
   <img alt="offscript" src="assets/banner-light.svg">
 </picture>
 
+<br>
+<br>
+
 <p>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
   <img alt="Python 3.10+" src="https://img.shields.io/badge/python-3.10%2B-blue">
