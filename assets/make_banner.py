@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 """Generate the README banner (light + dark) as SVG.
 
-Design notes — Swiss / International Typographic Style: monochrome surface,
-a single accent, dominant whitespace, asymmetric but balanced composition,
-typography as an object (large size jumps).
+A README banner gets about one second of attention, so it has to answer two
+questions in that second: what is this, and why should I care. The layout is
+therefore typography-led and ordered by exactly that:
 
-The mark is narrative, not ornament: a vertical rhythm (sound) turns into a
-horizontal one (text) across a single beat. The 90-degree change carries the
-whole claim — audio in, transcript out — without an arrow or a fade.
+  1. the name
+  2. what it does, in plain words, large
+  3. the objections it removes — the reason anyone switches
 
-The single accent marks only the output side of that transformation, and is
-reused once on the output filename in the command line. Nothing else is
-coloured, so the accent means exactly one thing: this is what you get.
+Point 3 is the one usually buried in tiny grey type. Here it is the second
+loudest element on the canvas, because "nothing gets uploaded" and "no API
+keys" are the whole argument, not footnotes.
+
+The mark stays small on purpose — a recognition token, not an illustration.
+It is a waveform knocked out of one solid tile, and it is one shape rather
+than several because everything thin turns to mush at this size. An earlier
+attempt drew a waveform resolving into long rounded horizontal bars: that is
+the universal skeleton-loader idiom, so it read as "loading", not "transcript".
+A solid tile at maximum contrast still reads when scaled to a favicon.
+
+Colour is one accent and it means one thing: this is what you get. It marks
+the output filename in the command and the claims below the rule, nothing
+else. The mark itself is monochrome, which keeps it from competing.
+
+Sizes are authored large because GitHub renders the banner scaled down to the
+readme column (~900px), so 92px of source becomes roughly 70px on screen.
 
 Usage:  python3 assets/make_banner.py [name]
 """
@@ -20,37 +34,40 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-W, H = 1060, 340
-PAD = 80                      # outer breathing room (§ spacing scale, 8px base)
-MARK_X = PAD                  # mark occupies the left column
-GUTTER = 96                   # mark -> type block, deliberately generous
+W, H = 1200, 438
+PAD = 72
 
-# Type block: one baseline drives everything below it.
-BASE_Y = 152                  # wordmark baseline
-TAGLINE_DY = 44
-CMD_DY = 96
-CAPTION_DY = 138
-# The mark centres on the optical middle of the whole type block, not on the
-# wordmark — otherwise it reads as floating above the text.
-MID_Y = BASE_Y + 34
+# --- vertical rhythm (8px base) ---------------------------------------------
+NAME_BASE = 158           # wordmark baseline
+TAGLINE_BASE = 220
+CHIP_TOP = 250
+CHIP_H = 46
+RULE_Y = 338
+CLAIMS_BASE = 376
 
-# --- Layer 1: primitives -> Layer 2: semantic tokens -------------------------
+SQ = 80                   # the mark is one solid object, not two thin ones
+MARK_CY = 160             # optically centred on the name + tagline group
+TYPE_X = PAD + SQ + 32
+
+# --- Layer 1 primitives -> Layer 2 semantic tokens --------------------------
 THEMES = {
     "light": {
-        "surface": "#fbfbfd",       # off-white, never pure #fff
-        "text_primary": "#1d1d1f",  # near-black, never pure #000
+        "surface": "#fbfbfd",        # off-white, never pure #fff
+        "surface_sunken": "#f0f0f4",  # the command field
+        "hairline": "#e0e0e6",
+        "text_primary": "#1d1d1f",   # near-black, never pure #000
+        "text_body": "#3c3c41",
         "text_secondary": "#6e6e73",
-        "text_tertiary": "#8e8e93",
-        "sound": "#c7c7cc",         # the neutral "before" state
-        "accent": "#0d9488",        # the only accent: transcribed output
+        "accent": "#0d9488",         # the only accent: what you get
     },
     "dark": {
         "surface": "#0b0b0c",
+        "surface_sunken": "#18181b",
+        "hairline": "#2a2a2e",
         "text_primary": "#f5f5f7",
-        "text_secondary": "#a1a1a6",
-        "text_tertiary": "#7c7c82",
-        "sound": "#3a3a3f",
-        "accent": "#2dd4bf",        # lifted for contrast on dark
+        "text_body": "#d2d2d7",
+        "text_secondary": "#98989d",
+        "accent": "#2dd4bf",         # lifted for contrast on dark
     },
 }
 
@@ -60,67 +77,71 @@ SANS = ("'Helvetica Neue', -apple-system, BlinkMacSystemFont, Inter, "
         "'Segoe UI', Arial, sans-serif")
 MONO = "'SF Mono', Menlo, Consolas, ui-monospace, monospace"
 
-# A speech-like envelope: bursts and gaps, not a symmetric lens.
-ENVELOPE = [0.34, 0.52, 0.28, 0.74, 0.55, 0.95, 0.62, 1.00, 0.78, 0.44, 0.86, 0.40]
-BAR_W, BAR_GAP = 6, 11
-BAR_MAX = 108
-BAR_MIN = 16                                # never let a bar read as a dot
+TAGLINE = "Transcribe any audio or video in 100 languages, on your own machine."
 
-# The transcript side gets the same footprint as the sound side, so the mark
-# reads as a transformation between two equals rather than a waveform with a
-# small icon stuck to it.
-LINE_H, LINE_GAP = 6, 16
-LINE_LENGTHS = [1.00, 0.82, 0.93, 0.46]   # a paragraph, ragged right
-SEAM = 34                                  # the beat where sound becomes text
+# Ordered by how much the objection actually costs the user: privacy first,
+# then the recurring bill and the signup friction, then reach.
+# Kept short so the row survives a font substitution without colliding; each
+# column has >90px of slack at these x positions.
+CLAIMS = [
+    (PAD, "Nothing gets uploaded"),
+    (390, "No API keys"),
+    (600, "No subscription"),
+    (850, "Files or 1800+ sites"),
+]
+
+# The mark: a waveform knocked out of a solid tile. Two thin shapes at this
+# size turn to mush; one solid shape with maximum contrast survives being
+# scaled to a favicon.
+BARS = [0.36, 0.68, 1.00, 0.59, 0.41]
+BAR_W, BAR_GAP = 6, 4
+INSET = 17
 
 
-def mark(t: dict) -> tuple[str, float]:
-    """Vertical rhythm (sound) turning into horizontal rhythm (text).
-
-    The transformation is a crisp 90-degree change, not a fade: a fade would
-    read as the signal dying out, which is the opposite of the claim.
-    Returns (svg fragment, total width).
-    """
-    out = []
-    x = MARK_X
-    for amp in ENVELOPE:
-        h = max(BAR_MAX * amp, BAR_MIN)
+def mark(t: dict) -> str:
+    """A waveform knocked out of a solid tile: one object, maximum contrast."""
+    x0, y0 = PAD, MARK_CY - SQ / 2
+    out = [f'<rect x="{x0}" y="{y0:.0f}" width="{SQ}" height="{SQ}" '
+           f'rx="20" fill="{t["text_primary"]}"/>']
+    inner = SQ - 2 * INSET
+    span = len(BARS) * BAR_W + (len(BARS) - 1) * BAR_GAP
+    x = x0 + (SQ - span) / 2
+    for amp in BARS:
+        h = max(inner * amp, BAR_W)
         out.append(
-            f'<rect x="{x:.1f}" y="{MID_Y - h / 2:.1f}" width="{BAR_W}" '
-            f'height="{h:.1f}" rx="{BAR_W / 2:.1f}" fill="{t["sound"]}"/>'
+            f'<rect x="{x:.1f}" y="{MARK_CY - h / 2:.1f}" width="{BAR_W}" '
+            f'height="{h:.1f}" rx="{BAR_W / 2:.1f}" fill="{t["surface"]}"/>'
         )
         x += BAR_W + BAR_GAP
-    sound_w = x - BAR_GAP - MARK_X
+    return "\n    ".join(out)
 
-    x = MARK_X + sound_w + SEAM
-    text_w = sound_w                       # deliberate parity with the bars
-    block_h = len(LINE_LENGTHS) * LINE_H + (len(LINE_LENGTHS) - 1) * LINE_GAP
-    y = MID_Y - block_h / 2
-    for frac in LINE_LENGTHS:
+
+def claims(t: dict) -> str:
+    out = []
+    for x, label in CLAIMS:
         out.append(
-            f'<rect x="{x:.1f}" y="{y:.1f}" width="{text_w * frac:.1f}" '
-            f'height="{LINE_H}" rx="{LINE_H / 2:.1f}" fill="{t["accent"]}"/>'
+            f'<circle cx="{x + 4}" cy="{CLAIMS_BASE - 7}" r="4.5" fill="{t["accent"]}"/>'
+            f'<text x="{x + 18}" y="{CLAIMS_BASE}" font-family="{SANS}" '
+            f'font-size="21" font-weight="500" fill="{t["text_primary"]}">{label}</text>'
         )
-        y += LINE_H + LINE_GAP
-    return "\n    ".join(out), sound_w + SEAM + text_w
+    return "\n  ".join(out)
 
 
 def svg(theme: str, name: str) -> str:
     t = THEMES[theme]
-    frag, mark_w = mark(t)
-    tx = MARK_X + mark_w + GUTTER
-    # Typography as an object: 76 / 18 / 14 / 11.5 is a real hierarchy, not
-    # four sizes of the same thing. Display gets negative tracking (-0.03em);
-    # the uppercase micro-caption gets generous tracking.
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="{name} — speech to text on your own machine">
+    # Real size jumps, not four sizes of the same thing: 92 / 28 / 21 / 18.
+    # Display gets negative tracking; nothing is set below 18px.
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-label="{name} — {TAGLINE} Nothing gets uploaded, no API keys, no subscription, files or 1800+ sites.">
   <rect width="{W}" height="{H}" fill="{t['surface']}"/>
   <g>
-    {frag}
+    {mark(t)}
   </g>
-  <text x="{tx}" y="{BASE_Y}" font-family="{SANS}" font-size="76" font-weight="600" letter-spacing="-2.3" fill="{t['text_primary']}">{name}</text>
-  <text x="{tx + 2}" y="{BASE_Y + TAGLINE_DY}" font-family="{SANS}" font-size="18" font-weight="400" fill="{t['text_secondary']}">Speech to text on your own machine.</text>
-  <text x="{tx + 2}" y="{BASE_Y + CMD_DY}" font-family="{MONO}" font-size="14" fill="{t['text_secondary']}"><tspan fill="{t['text_tertiary']}">$ </tspan>{name} interview.m4a<tspan fill="{t['accent']}"> → transcript.srt</tspan></text>
-  <text x="{tx + 2}" y="{BASE_Y + CAPTION_DY}" font-family="{SANS}" font-size="11.5" font-weight="500" letter-spacing="1.4" fill="{t['text_tertiary']}">NO CLOUD · NO API KEYS · 1800+ SITES · MIT</text>
+  <text x="{TYPE_X}" y="{NAME_BASE}" font-family="{SANS}" font-size="92" font-weight="700" letter-spacing="-3.2" fill="{t['text_primary']}">{name}</text>
+  <text x="{TYPE_X + 3}" y="{TAGLINE_BASE}" font-family="{SANS}" font-size="28" font-weight="400" fill="{t['text_body']}">{TAGLINE}</text>
+  <rect x="{TYPE_X + 3}" y="{CHIP_TOP}" width="530" height="{CHIP_H}" rx="10" fill="{t['surface_sunken']}"/>
+  <text x="{TYPE_X + 23}" y="{CHIP_TOP + 30}" font-family="{MONO}" font-size="18" fill="{t['text_body']}"><tspan fill="{t['text_secondary']}">$ </tspan>{name} interview.m4a<tspan fill="{t['accent']}"> → transcript.srt</tspan></text>
+  <line x1="{PAD}" y1="{RULE_Y}" x2="{W - PAD}" y2="{RULE_Y}" stroke="{t['hairline']}" stroke-width="1"/>
+  {claims(t)}
 </svg>
 """
 
